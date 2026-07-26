@@ -2,7 +2,7 @@
 # Only changes to these values should invalidate the source cache.
 GCC_BRANCH=releases/gcc-16
 GCC_COMMIT=
-BINUTILS_BRANCH=binutils-2_46-branch
+BINUTILS_BRANCH=binutils-2_47-branch
 BINUTILS_COMMIT=
 SHALLOW_SINCE=2026-04-30
 GLIBC_VER=2.43
