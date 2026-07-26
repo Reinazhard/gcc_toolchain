@@ -84,7 +84,7 @@ download_resources() {
   fetch "https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VER}.tar.xz" "${GMP_SHA256:-}" & fetch_pids+=($!)
   fetch "https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VER}.tar.xz" "${MPFR_SHA256:-}" & fetch_pids+=($!)
   fetch "https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VER}.tar.xz" "${MPC_SHA256:-}" & fetch_pids+=($!)
-  fetch "https://libisl.sourceforge.io/isl-${ISL_VER}.tar.xz" "${ISL_SHA256:-}" & fetch_pids+=($!)
+  fetch "https://downloads.sourceforge.net/project/libisl/isl-${ISL_VER}.tar.xz" "${ISL_SHA256:-}" & fetch_pids+=($!)
   
   for pid in "${fetch_pids[@]}"; do
     wait "$pid" || die "A background download failed!"
