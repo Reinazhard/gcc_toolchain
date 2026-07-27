@@ -39,7 +39,25 @@ fetch() {
 
   log "Downloading ${file}..."
   if ! $DRY_RUN; then
-    curl -fL --retry 5 --retry-delay 3 -o "sources/${file}.tmp" "${url}"
+    local curl_flags=(-fL --retry 10 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 600)
+    local urls=("${url}")
+    # Add fallback mirrors (order: primary first, then mirrors)
+    if [[ "${url}" == *kernel.org* ]]; then
+      urls+=("https://cdn.kernel.org/pub/${url#*kernel.org/pub/}")
+    elif [[ "${url}" == *ftp.gnu.org* ]]; then
+      urls+=("https://mirrors.kernel.org/gnu/${url#*ftp.gnu.org/gnu/}")
+    fi
+
+    local success=false
+    for try_url in "${urls[@]}"; do
+      if curl "${curl_flags[@]}" -o "sources/${file}.tmp" "${try_url}"; then
+        success=true
+        break
+      fi
+      warn "Download failed from ${try_url}, trying next mirror..."
+    done
+    $success || die "All mirrors failed for ${file}"
+
     mv "sources/${file}.tmp" "sources/${file}"
     verify_checksum "${file}" "${expected_sha256}"
   else
