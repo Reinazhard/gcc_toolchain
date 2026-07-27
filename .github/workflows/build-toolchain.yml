@@ -38,12 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -Syu --needed --noconfirm base-devel git curl tar xz ncurses python rsync zstd cpio kmod bc wget gmp mpfr libmpc isl zlib gperf expat openssl mold cmake ccache
-
-      - name: Configure ccache
-        run: |
-          echo "/usr/lib/ccache/bin" >> "$GITHUB_PATH"
-          ccache --zero-stats || true
+          pacman -Syu --needed --noconfirm base-devel git curl tar xz ncurses python rsync zstd cpio kmod bc wget gmp mpfr libmpc isl zlib gperf expat openssl mold cmake
 
       - name: Install llvm-bolt-bin from AUR
         run: |
