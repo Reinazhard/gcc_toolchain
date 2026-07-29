@@ -31,21 +31,6 @@ jobs:
         with:
           fetch-depth: 1 # Shallow clone
 
-      - name: Notify — Build Started
-        if: always()
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d "parse_mode=MarkdownV2" \
-            -d "text=$(cat <<EOF
-          🔄 *Build Started*
-          • Arch: \`${{ matrix.arch }}\`
-          • Target: \`${{ matrix.target_triple }}\`
-          • Commit: \`${GITHUB_SHA::7}\`
-          • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          EOF
-          )"
-
       - name: Install dependencies
         run: |
           apt-get update
@@ -54,6 +39,22 @@ jobs:
             libgmp-dev libmpfr-dev \
             libmpc-dev libisl-dev zlib1g-dev libncurses-dev libssl-dev \
             libexpat1-dev libzstd-dev cmake ninja-build
+
+      - name: Notify — Build Started
+        if: always()
+        run: |
+          SHORT_SHA="$(printf '%.7s' "${GITHUB_SHA}")"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=MarkdownV2" \
+            -d "text=$(cat <<EOF
+          🔄 *Build Started*
+          • Arch: \`${{ matrix.arch }}\`
+          • Target: \`${{ matrix.target_triple }}\`
+          • Commit: \`${SHORT_SHA}\`
+          • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
 
       - name: Download & Extract Sources
         run: bash build.sh -a "${{ matrix.arch }}" download_resources
@@ -122,6 +123,7 @@ jobs:
       - name: Notify — Build Failed
         if: failure()
         run: |
+          SHORT_SHA="$(printf '%.7s' "${GITHUB_SHA}")"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d "parse_mode=MarkdownV2" \
@@ -129,7 +131,7 @@ jobs:
           ❌ *Build Failed*
           • Arch: \`${{ matrix.arch }}\`
           • Target: \`${{ matrix.target_triple }}\`
-          • Commit: \`${GITHUB_SHA::7}\`
+          • Commit: \`${SHORT_SHA}\`
           • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           EOF
           )"
@@ -137,6 +139,7 @@ jobs:
       - name: Notify — Build Finished
         if: success()
         run: |
+          SHORT_SHA="$(printf '%.7s' "${GITHUB_SHA}")"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
             -d "parse_mode=MarkdownV2" \
@@ -144,7 +147,7 @@ jobs:
           ✅ *Build Finished*
           • Arch: \`${{ matrix.arch }}\`
           • Target: \`${{ matrix.target_triple }}\`
-          • Commit: \`${GITHUB_SHA::7}\`
+          • Commit: \`${SHORT_SHA}\`
           • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           EOF
           )"
