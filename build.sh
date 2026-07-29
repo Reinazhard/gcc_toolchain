@@ -103,7 +103,7 @@ check_deps() {
   if (( ${#missing[@]} > 0 )); then
     warn "Missing host tools: ${missing[*]}"
     if ! $DRY_RUN; then
-      die "Install missing tools with: pacman -S ${missing[*]}"
+      die "Install missing tools: ${missing[*]}"
     else
       warn "[DRY-RUN] Proceeding anyway..."
     fi
