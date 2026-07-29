@@ -12,7 +12,7 @@ jobs:
     name: Build ${{ matrix.arch }} (${{ matrix.target_triple }})
     runs-on: ubuntu-latest
     container:
-      image: archlinux:base-devel
+      image: ubuntu:24.04
     timeout-minutes: 600 # 10 hours timeout
     strategy:
       fail-fast: false
@@ -31,20 +31,13 @@ jobs:
         with:
           fetch-depth: 1 # Shallow clone
 
-      - name: Configure Pacman parallel downloads
-        run: |
-          echo "--- Configuring Pacman parallel downloads ---"
-          sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-
       - name: Install dependencies
         run: |
-          pacman -Syu --needed --noconfirm base-devel git curl tar xz ncurses python rsync zstd cpio kmod bc wget gmp mpfr libmpc isl zlib gperf expat openssl mold cmake
-
-      - name: Install llvm-bolt-bin from AUR
-        run: |
-          useradd -m builduser
-          echo "builduser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-          sudo -u builduser bash -c "cd ~ && git clone https://aur.archlinux.org/llvm-bolt-bin.git && cd llvm-bolt-bin && makepkg -si --noconfirm"
+          apt-get update
+          apt-get install -y build-essential git curl xz-utils python3 rsync \
+            zstd cpio kmod bc wget gperf texinfo libgmp-dev libmpfr-dev \
+            libmpc-dev libisl-dev zlib1g-dev libncurses-dev libssl-dev \
+            libexpat1-dev cmake ninja-build
 
       - name: Download & Extract Sources
         run: bash build.sh -a "${{ matrix.arch }}" download_resources
@@ -110,7 +103,7 @@ jobs:
           # matching ${WORK_DIR}/build-${stage_name}.log. Thus, the "build-*.log"
           # glob perfectly covers all of them (including binutils, pass1, glibc,
           # pass2, mold, and PGO training logs).
-          path: "build-*.log"
+          path: "build-*.log config.log"
           retention-days: 7
 
   publish-release:
