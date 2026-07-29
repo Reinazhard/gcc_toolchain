@@ -17,6 +17,7 @@ GCC_PASS2_FLAGS=(
 build_gcc_pass2() {
   require_build_context
   header "STAGE 5: GCC PASS 2 (PGO COMPILER)"
+  LOG_STAGE="gcc-pass2"
 
   local PROFILE_DIR="${WORK_DIR}/pgo-profiles"
   local profile_count=0
@@ -96,6 +97,8 @@ build_gcc_pass2() {
   run_log "gcc-pgo-final-install" make install
 
   safe_cd "${WORK_DIR}"
+  collect_logs "${BUILD_DIR}/build-gcc-pgo-instr"
+  collect_logs "${BUILD_DIR}/build-gcc-pgo-final"
   ok "Phase 3 complete: PGO-optimized compiler installed  [$(elapsed)]"
 }
 register_stage "build_gcc_pass2" "Build GCC Pass 2 (with PGO)"

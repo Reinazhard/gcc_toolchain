@@ -48,22 +48,50 @@ safe_cd() {
 run_log() {
   local stage_name="$1"
   shift
-  LOG_FILE="${WORK_DIR}/build-${stage_name}.log"
+  local log_dir="${WORK_DIR}/logs/${LOG_STAGE:?LOG_STAGE not set}"
+  mkdir -p "${log_dir}"
+  LOG_FILE="${log_dir}/${stage_name}.log"
   
   if $DRY_RUN; then
     log "[DRY-RUN] $*"
     return 0
   fi
 
-  log "Running stage: ${stage_name} (log: build-${stage_name}.log)..."
+  log "Running stage: ${stage_name} (log: logs/${LOG_STAGE}/${stage_name}.log)..."
   "$@" > "${LOG_FILE}" 2>&1
+}
+
+# Collect all *.log files from a build directory into the stage log dir.
+# Usage: collect_logs <build_dir>
+collect_logs() {
+  local build_dir="$1"
+  local log_dir="${WORK_DIR}/logs/${LOG_STAGE}"
+  mkdir -p "${log_dir}"
+
+  if $DRY_RUN; then
+    log "[DRY-RUN] collect_logs ${build_dir}"
+    return 0
+  fi
+
+  if [[ -d "${build_dir}" ]]; then
+    find "${build_dir}" -maxdepth 1 -name '*.log' -exec mv -f {} "${log_dir}/" \;
+  fi
 }
 
 cleanup() {
   local exit_code=$?
-  if [ $exit_code -ne 0 ] && [ -n "${LOG_FILE:-}" ] && [ -f "${LOG_FILE:-}" ]; then
-    echo -e "\n${RED}${BOLD}!!! Build failed. Last 20 lines of ${LOG_FILE}:${RESET}"
-    tail -n 20 "${LOG_FILE}"
+  if [ $exit_code -ne 0 ]; then
+    # Collect logs from the current build directory on failure
+    if [ -n "${LOG_STAGE:-}" ] && [ -n "${BUILD_DIR:-}" ]; then
+      local build_dir
+      for d in "${BUILD_DIR}"/build-*/; do
+        [ -d "$d" ] && collect_logs "$d"
+      done
+    fi
+    if [ -n "${LOG_FILE:-}" ] && [ -f "${LOG_FILE:-}" ]; then
+      echo -e "\n${RED}${BOLD}!!! Build failed. Last 20 lines of ${LOG_FILE}:${RESET}"
+      tail -n 20 "${LOG_FILE}"
+    fi
   fi
   exit $exit_code
 }

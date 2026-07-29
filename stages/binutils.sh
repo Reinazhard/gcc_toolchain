@@ -5,6 +5,7 @@
 build_binutils() {
   require_build_context
   header "STAGE 1: BINUTILS"
+  LOG_STAGE="binutils"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-binutils && safe_cd build-binutils
 
@@ -36,6 +37,7 @@ build_binutils() {
   run_log "binutils-install" make install
 
   safe_cd "${WORK_DIR}"
+  collect_logs "${BUILD_DIR}/build-binutils"
   ok "Binutils done  [$(elapsed)]"
 }
 register_stage "build_binutils" "Build binutils"

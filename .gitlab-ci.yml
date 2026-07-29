@@ -57,8 +57,7 @@ build-toolchain:
     paths:
       - "*.tar.zst"
       - release_notes.txt
-      - "build-*.log"
-      - config.log
+      - "logs/"
     reports:
       dotenv: build.env
     expire_in: 30 days

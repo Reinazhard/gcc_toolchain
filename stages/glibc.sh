@@ -5,6 +5,7 @@
 build_glibc() {
   require_build_context
   header "STAGE 4: GLIBC"
+  LOG_STAGE="glibc"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-glibc && safe_cd build-glibc
 
@@ -44,6 +45,7 @@ build_glibc() {
   run_log "glibc-install" make install_root="${SYSROOT}" install
 
   safe_cd "${WORK_DIR}"
+  collect_logs "${BUILD_DIR}/build-glibc"
   ok "Glibc done  [$(elapsed)]"
 }
 register_stage "build_glibc" "Build Glibc"

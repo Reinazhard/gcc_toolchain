@@ -24,6 +24,7 @@ gcc-pgo-stage1/
 
 # Log files
 *.log
+logs/
 
 # Artifacts
 *.tar.*

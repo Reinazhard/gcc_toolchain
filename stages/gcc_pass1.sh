@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/stages/_gcc_common.sh"
 build_gcc_pass1() {
   require_build_context
   header "STAGE 3: GCC PASS 1 (BOOTSTRAP C COMPILER)"
+  LOG_STAGE="gcc-pass1"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-gcc-pass1 && safe_cd build-gcc-pass1
 
@@ -31,6 +32,7 @@ build_gcc_pass1() {
   run_log "gcc-pass1-install-libgcc" make install-target-libgcc
 
   safe_cd "${WORK_DIR}"
+  collect_logs "${BUILD_DIR}/build-gcc-pass1"
   ok "GCC Pass 1 done  [$(elapsed)]"
 }
 register_stage "build_gcc_pass1" "Build GCC Pass 1 (C/C++ only)"
