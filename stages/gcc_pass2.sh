@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 5: GCC Pass 2 (with PGO)
+# Stage 7: GCC Pass 2 (with PGO)
 
 # Source the GCC common helper
 source "${SCRIPT_DIR}/stages/_gcc_common.sh"
@@ -16,7 +16,7 @@ GCC_PASS2_FLAGS=(
 
 build_gcc_pass2() {
   require_build_context
-  header "STAGE 5: GCC PASS 2 (PGO COMPILER)"
+  header "STAGE 7: GCC PASS 2 (PGO COMPILER)"
   LOG_STAGE="gcc-pass2"
 
   local PROFILE_DIR="${WORK_DIR}/pgo-profiles"

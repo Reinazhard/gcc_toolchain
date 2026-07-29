@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 7: Strip Binaries
+# Stage 8: Strip Binaries
 
 strip_binaries() {
-  header "STAGE 7: STRIPPING BINARIES"
+  header "STAGE 8: STRIPPING BINARIES"
 
   local CUR_DIR="${PREFIX}"
   log "Target directory for stripping: ${CUR_DIR}"

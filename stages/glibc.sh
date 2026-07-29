@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 4: Build Glibc
+# Stage 6: Build Glibc
 
 build_glibc() {
   require_build_context
-  header "STAGE 4: GLIBC"
+  header "STAGE 6: GLIBC"
   LOG_STAGE="glibc"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-glibc && safe_cd build-glibc

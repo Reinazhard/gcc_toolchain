@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 8: ELF Validation
+# Stage 9: ELF Validation
 
 validate_elf() {
-  header "STAGE 8: ELF VALIDATION"
+  header "STAGE 9: ELF VALIDATION"
 
   log "Validating host compiler binaries (should be X86-64)..."
   local host_bins=("gcc" "ld" "as" "mold")

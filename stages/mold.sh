@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 6: Install Mold linker
+# Stage 2: Install Mold linker
 
 install_mold() {
   require_context WORK_DIR PREFIX MOLD_BRANCH TARGET JOBS
-  header "STAGE 6: MOLD LINKER"
+  header "STAGE 2: MOLD LINKER"
   LOG_STAGE="mold"
   command -v cmake &>/dev/null || die "cmake required for mold stage"
 

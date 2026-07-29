@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 2: Install Linux headers
+# Stage 4: Install Linux headers
 
 build_linux_headers() {
   require_context WORK_DIR SYSROOT LINUX_VER KERNEL_ARCH
-  header "STAGE 2: LINUX KERNEL HEADERS"
+  header "STAGE 4: LINUX KERNEL HEADERS"
   LOG_STAGE="linux-headers"
   safe_cd "${WORK_DIR}/linux-${LINUX_VER}"
 

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 1: Build Binutils
+# Stage 3: Build Binutils
 
 build_binutils() {
   require_build_context
-  header "STAGE 1: BINUTILS"
+  header "STAGE 3: BINUTILS"
   LOG_STAGE="binutils"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-binutils && safe_cd build-binutils

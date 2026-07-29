@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0
 #
-# Stage 3: GCC Pass 1
+# Stage 5: GCC Pass 1
 
 # Source the GCC common helper
 source "${SCRIPT_DIR}/stages/_gcc_common.sh"
 
 build_gcc_pass1() {
   require_build_context
-  header "STAGE 3: GCC PASS 1 (BOOTSTRAP C COMPILER)"
+  header "STAGE 5: GCC PASS 1 (BOOTSTRAP C COMPILER)"
   LOG_STAGE="gcc-pass1"
   safe_cd "${BUILD_DIR}"
   mkdir -p build-gcc-pass1 && safe_cd build-gcc-pass1
