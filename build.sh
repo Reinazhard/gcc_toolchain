@@ -37,20 +37,22 @@ shift $((OPTIND-1))
 
 [[ -z "${ARCH:-}" ]] && usage
 
-# 4. Source lib/flags.sh
-source "${SCRIPT_DIR}/lib/flags.sh"
-
-# 5. Source lib/targets.sh
-source "${SCRIPT_DIR}/lib/targets.sh"
-
-# 5.1 Source lib/context.sh
-source "${SCRIPT_DIR}/lib/context.sh"
-
-# 6. Set variables and environment
+# 4. Set core environment early so flags.sh can find mold in ${PREFIX}/bin
 export WORK_DIR="$PWD"
 export PREFIX="${WORK_DIR}/gcc-${ARCH}"
-export SYSROOT="${PREFIX}/${TARGET}/sysroot"
 export PATH="${PREFIX}/bin:/usr/bin/core_perl:${PATH}"
+
+# 5. Source lib/flags.sh (needs mold in PATH)
+source "${SCRIPT_DIR}/lib/flags.sh"
+
+# 6. Source lib/targets.sh
+source "${SCRIPT_DIR}/lib/targets.sh"
+
+# 6.1 Source lib/context.sh
+source "${SCRIPT_DIR}/lib/context.sh"
+
+# 7. Set remaining environment (needs TARGET from targets.sh)
+export SYSROOT="${PREFIX}/${TARGET}/sysroot"
 
 BUILD_TRIPLE="$(cc -dumpmachine)"
 JOBS=$(nproc --all)
