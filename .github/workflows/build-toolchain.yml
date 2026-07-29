@@ -31,6 +31,21 @@ jobs:
         with:
           fetch-depth: 1 # Shallow clone
 
+      - name: Notify — Build Started
+        if: always()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=MarkdownV2" \
+            -d "text=$(cat <<EOF
+          🔄 *Build Started*
+          • Arch: \`${{ matrix.arch }}\`
+          • Target: \`${{ matrix.target_triple }}\`
+          • Commit: \`${GITHUB_SHA::7}\`
+          • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
+
       - name: Install dependencies
         run: |
           apt-get update
@@ -102,6 +117,36 @@ jobs:
           # run_log() and collect_logs() produce files under logs/{stage}/
           path: "logs/"
           retention-days: 7
+
+      - name: Notify — Build Failed
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=MarkdownV2" \
+            -d "text=$(cat <<EOF
+          ❌ *Build Failed*
+          • Arch: \`${{ matrix.arch }}\`
+          • Target: \`${{ matrix.target_triple }}\`
+          • Commit: \`${GITHUB_SHA::7}\`
+          • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
+
+      - name: Notify — Build Finished
+        if: success()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d "parse_mode=MarkdownV2" \
+            -d "text=$(cat <<EOF
+          ✅ *Build Finished*
+          • Arch: \`${{ matrix.arch }}\`
+          • Target: \`${{ matrix.target_triple }}\`
+          • Commit: \`${GITHUB_SHA::7}\`
+          • [View Pipeline](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          )"
 
   publish-release:
     name: Publish GitHub Release
