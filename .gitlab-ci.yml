@@ -15,7 +15,7 @@ build-toolchain:
   stage: build
   tags:
     - self-host
-  image: archlinux:base-devel
+  image: ubuntu:24.04
   timeout: 10h
   cache:
     key:
@@ -23,23 +23,15 @@ build-toolchain:
         - .version-pins
     paths:
       - sources/
-      - .ccache/
   parallel:
     matrix:
       - ARCH: "arm64"
         TARGET_TRIPLE: "aarch64-linux-gnu"
       - ARCH: "arm"
         TARGET_TRIPLE: "arm-linux-gnueabihf"
-  variables:
-    CCACHE_DIR: $CI_PROJECT_DIR/.ccache
-    CCACHE_COMPRESS: 1
-    CCACHE_MAXSIZE: 10G
   script:
-    - echo "--- Configuring Pacman parallel downloads ---"
-    - sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-    - pacman -Syu --needed --noconfirm base-devel git curl tar xz ncurses python rsync zstd cpio kmod bc wget gmp mpfr libmpc isl zlib gperf expat openssl mold cmake ccache
-    - export PATH="/usr/lib/ccache/bin:$PATH"
-    - ccache --zero-stats || true
+    - apt-get update
+    - apt-get install -y build-essential git curl xz-utils python3 rsync zstd cpio kmod bc wget gperf texinfo libgmp-dev libmpfr-dev libmpc-dev libisl-dev zlib1g-dev libncurses-dev libssl-dev libexpat1-dev cmake ninja-build
     - bash build.sh -a "${ARCH}" download_resources
     - bash build.sh -a "${ARCH}" install_mold
     - bash build.sh -a "${ARCH}" build_binutils
@@ -59,7 +51,6 @@ build-toolchain:
     - DATE_STR=$(date +%Y.%m.%d)-${CI_PIPELINE_IID}
     - ARTIFACT_NAME="toolchain-${ARCH}-${DATE_STR}-gcc${GCC_HASH_SHORT}-binutils${BINUTILS_HASH_SHORT}"
     - tar -I "zstd -T0" -cf "${ARTIFACT_NAME}.tar.zst" -C "./" "gcc-${ARCH}/"
-    - ccache --show-stats || true
     - echo "TAG_NAME=${DATE_STR}" > build.env
     - echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> build.env
   artifacts:
@@ -67,6 +58,7 @@ build-toolchain:
       - "*.tar.zst"
       - release_notes.txt
       - "build-*.log"
+      - config.log
     reports:
       dotenv: build.env
     expire_in: 30 days
