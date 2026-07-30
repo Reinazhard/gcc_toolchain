@@ -41,6 +41,7 @@ build-toolchain:
     - bash build.sh -a "${ARCH}" build_gcc_pass2
     - bash build.sh -a "${ARCH}" strip_binaries
     - bash build.sh -a "${ARCH}" validate_elf
+    - bash build.sh -a "${ARCH}" validate_host_linking
     - bash build.sh -a "${ARCH}" print_summary | tee summary_raw.txt
     - echo '```text' > release_notes.txt
     - sed 's/\x1b\[[0-9;]*m//g' summary_raw.txt >> release_notes.txt
