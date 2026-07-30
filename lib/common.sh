@@ -64,6 +64,22 @@ run_log() {
   "$@" > "${LOG_FILE}" 2>&1
 }
 
+# ── Build flag recording ───────────────────────────────────────────
+# Writes structured metadata to ${PREFIX}/.build_flags for reproducibility
+# auditing.  Usage: record_build_flags <component> <key=value> ...
+record_build_flags() {
+  local component="$1"; shift
+  local flags_file="${PREFIX}/.build_flags"
+  mkdir -p "$(dirname "${flags_file}")"
+
+  echo "[${component}]" >> "${flags_file}"
+  echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "${flags_file}"
+  for kv in "$@"; do
+    echo "${kv}" >> "${flags_file}"
+  done
+  echo >> "${flags_file}"
+}
+
 # Collect all *.log files from a build directory into the stage log dir.
 # Usage: collect_logs <build_dir>
 collect_logs() {
