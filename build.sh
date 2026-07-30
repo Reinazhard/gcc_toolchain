@@ -68,6 +68,53 @@ done
 # 8. Parse remaining positional args as STAGES
 STAGES=("${@:-all}")
 
+# ── Stage resume support ───────────────────────────────────────────
+ALL_STAGES=(
+  download_resources
+  install_mold
+  build_binutils
+  build_linux_headers
+  build_gcc_pass1
+  build_glibc
+  build_gcc_pass2
+  strip_binaries
+  validate_elf
+  validate_host_linking
+  print_summary
+)
+
+_stage_file() { echo "${WORK_DIR}/.build_stages_${ARCH}"; }
+
+# Save remaining stages to disk before each stage runs.
+# If the build crashes, this file contains the failing stage + rest.
+_save_stage_progress() {
+  local -a remaining=("$@")
+  printf '%s\n' "${remaining[@]}" > "$(_stage_file)"
+}
+
+# On startup, check for a previous incomplete build and offer resume.
+_check_resume() {
+  local sf; sf="$(_stage_file)"
+  if [[ -f "${sf}" ]] && [[ "${STAGES[0]}" == "all" ]]; then
+    local -a saved_stages
+    mapfile -t saved_stages < "${sf}"
+    if (( ${#saved_stages[@]} > 0 )); then
+      warn "Previous incomplete build found (next: ${saved_stages[0]})"
+      read -r -p "Resume from ${saved_stages[0]}? [Y/n] " answer
+      answer="${answer:-Y}"
+      if [[ "${answer}" =~ ^[Yy] ]]; then
+        STAGES=("${saved_stages[@]}")
+        log "Resuming from ${saved_stages[0]}..."
+      else
+        rm -f "${sf}"
+        # STAGES stays ("all"), will be replaced with ALL_STAGES at dispatch
+      fi
+    fi
+  fi
+}
+
+_check_resume
+
 # Elapsed-time tracking persistence across separate stage invocations
 if [[ "${STAGES[0]}" == "all" ]] || [[ " ${STAGES[*]} " == *" download_resources "* ]]; then
   START_TIME=$(date +%s)
@@ -117,24 +164,18 @@ _should_print_startup_info && _print_startup_info
 
 # 11. Dispatch
 if [[ "${STAGES[0]}" == "all" ]]; then
-  check_deps
-  download_resources
-  install_mold
-  build_binutils
-  build_linux_headers
-  build_gcc_pass1
-  build_glibc
-  build_gcc_pass2
-  strip_binaries
-  validate_elf
-  validate_host_linking
-  print_summary
-else
-  for stage in "${STAGES[@]}"; do
-    if is_stage_registered "$stage"; then
-      $stage
-    else
-      die "Unknown or unregistered stage: $stage"
-    fi
-  done
+  STAGES=("${ALL_STAGES[@]}")
 fi
+
+check_deps
+# Save full stage list on first run; resume may have narrowed STAGES
+if [[ ! -f "$(_stage_file)" ]]; then
+  _save_stage_progress "${ALL_STAGES[@]}"
+fi
+for (( _i=0; _i<${#STAGES[@]}; _i++ )); do
+  _stage="${STAGES[$_i]}"
+  # Save remaining stages before execution
+  _save_stage_progress "${STAGES[@]:${_i}}"
+  "$_stage"
+done
+rm -f "$(_stage_file)"
