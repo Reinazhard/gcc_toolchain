@@ -127,6 +127,7 @@ if [[ "${STAGES[0]}" == "all" ]]; then
   build_gcc_pass2
   strip_binaries
   validate_elf
+  validate_host_linking
   print_summary
 else
   for stage in "${STAGES[@]}"; do
