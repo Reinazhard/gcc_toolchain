@@ -2,6 +2,16 @@
 #
 # Common helper to configure GCC passes.
 # Sourced by stages/gcc_pass1.sh and stages/gcc_pass2.sh.
+#
+# Bootstrap design: 2-pass + PGO (not 4-stage like gnu-devtools-for-arm).
+# Pass 1 builds a minimal C/C++ compiler.  Glibc is built with pass1.
+# Pass 2 builds the full PGO-optimized compiler + target libs (libstdc++,
+# libgcc) in one `make all`.  This is correct because:
+#   - --with-build-sysroot and --with-sysroot both point to the same
+#     sysroot (populated by glibc stage), so there's no path mismatch.
+#   - `make all` builds compiler → libs in dependency order automatically.
+#   - The reference's 4-stage separation exists for historical bootstrapping
+#     purity and relocation portability, neither of which apply here.
 
 _configure_gcc() {
   local src_dir="$1"
