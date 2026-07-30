@@ -98,7 +98,7 @@ _print_startup_info() {
 # 9. check_deps() — inline, short, references JOBS, DRY_RUN
 check_deps() {
   local missing=()
-  for cmd in gcc g++ make bison flex makeinfo gawk curl tar xz git zstd mold; do
+  for cmd in gcc g++ make bison flex makeinfo m4 file gawk curl tar xz git zstd mold; do
     command -v "$cmd" &>/dev/null || missing+=("$cmd")
   done
   
