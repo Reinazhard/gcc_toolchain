@@ -31,6 +31,16 @@ build_gcc_pass1() {
   run_log "gcc-pass1-make-libgcc" make all-target-libgcc
   run_log "gcc-pass1-install-libgcc" make install-target-libgcc
 
+  local gcc_ver; gcc_ver=$(cat "${WORK_DIR}/gcc-src/gcc/BASE-VER")
+  local gcc_sha; gcc_sha=$(git -C "${WORK_DIR}/gcc-src" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  record_build_flags "gcc-pass1" \
+    "version=${gcc_ver}+${gcc_sha}" \
+    "target=${TARGET}" \
+    "languages=c" \
+    "shared=false" \
+    "lto=false" \
+    "pgo=false"
+
   safe_cd "${WORK_DIR}"
   collect_logs "${BUILD_DIR}/build-gcc-pass1"
   ok "GCC Pass 1 done  [$(elapsed)]"

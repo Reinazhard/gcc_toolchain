@@ -96,6 +96,18 @@ build_gcc_pass2() {
   run_log "gcc-pgo-final-make" make all
   run_log "gcc-pgo-final-install" make install
 
+  local gcc_ver; gcc_ver=$(cat "${WORK_DIR}/gcc-src/gcc/BASE-VER")
+  local gcc_sha; gcc_sha=$(git -C "${WORK_DIR}/gcc-src" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  record_build_flags "gcc-pass2" \
+    "version=${gcc_ver}+${gcc_sha}" \
+    "target=${TARGET}" \
+    "languages=c,c++" \
+    "shared=true" \
+    "lto=true" \
+    "pgo=true" \
+    "pgo_training=kernel" \
+    "profile_count=${profile_count}"
+
   safe_cd "${WORK_DIR}"
   collect_logs "${BUILD_DIR}/build-gcc-pgo-instr"
   collect_logs "${BUILD_DIR}/build-gcc-pgo-final"

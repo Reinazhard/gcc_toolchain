@@ -33,6 +33,15 @@ build_binutils() {
       CXXFLAGS="${HOST_CXXFLAGS}" \
       LDFLAGS="-static-libstdc++ -static-libgcc ${HOST_LDFLAGS}"
 
+  local binutils_ver; binutils_ver=$(cat "${WORK_DIR}/binutils-src/bfd/version/config.bfd" 2>/dev/null | grep -oP 'version=\K.*' || echo "unknown")
+  record_build_flags "binutils" \
+    "version=${binutils_ver}" \
+    "target=${TARGET}" \
+    "static=true" \
+    "shared=false" \
+    "lto=true" \
+    "zstd=true"
+
   run_log "binutils-make" make
   run_log "binutils-install" make install
 

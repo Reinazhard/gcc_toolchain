@@ -33,6 +33,12 @@ install_mold() {
   run_log "mold-build" cmake --build build-mold -j${JOBS}
   run_log "mold-install" cmake --install build-mold
 
+  local mold_ver; mold_ver=$(git -C "${WORK_DIR}/mold-src" describe --tags --always 2>/dev/null || echo "unknown")
+  record_build_flags "mold" \
+    "version=${mold_ver}" \
+    "mostly_static=true" \
+    "blake3=bundled"
+
   # Create symlinks for GCC -fuse-ld=mold lookup
   if ! $DRY_RUN; then
     ln -sfn mold "${PREFIX}/bin/ld.mold"

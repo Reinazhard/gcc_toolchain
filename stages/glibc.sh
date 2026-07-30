@@ -44,6 +44,13 @@ build_glibc() {
   run_log "glibc-make" make
   run_log "glibc-install" make install_root="${SYSROOT}" install
 
+  record_build_flags "glibc" \
+    "version=${GLIBC_VER}" \
+    "target=${TARGET}" \
+    "kernel=${LINUX_VER}" \
+    "multilib=false" \
+    "selinux=false"
+
   safe_cd "${WORK_DIR}"
   collect_logs "${BUILD_DIR}/build-glibc"
   ok "Glibc done  [$(elapsed)]"
