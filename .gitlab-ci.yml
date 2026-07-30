@@ -15,7 +15,7 @@ build-toolchain:
   stage: build
   tags:
     - self-host
-  image: ubuntu:24.04
+  image: ubuntu:22.04
   timeout: 10h
   cache:
     key:
