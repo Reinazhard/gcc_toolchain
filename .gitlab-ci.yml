@@ -31,7 +31,7 @@ build-toolchain:
         TARGET_TRIPLE: "arm-linux-gnueabihf"
   script:
     - apt-get update
-    - apt-get install -y build-essential git curl xz-utils python3 rsync zstd cpio kmod bc wget gperf texinfo bison flex m4 file pkg-config libgmp-dev libmpfr-dev libmpc-dev libisl-dev zlib1g-dev libncurses-dev libssl-dev libexpat1-dev libzstd-dev cmake ninja-build
+    - apt-get install -y build-essential git curl xz-utils python3 rsync zstd cpio kmod bc wget gperf texinfo bison flex gawk m4 file pkg-config libgmp-dev libmpfr-dev libmpc-dev libisl-dev zlib1g-dev libncurses-dev libssl-dev libexpat1-dev libzstd-dev cmake ninja-build
     - bash build.sh -a "${ARCH}" download_resources
     - bash build.sh -a "${ARCH}" install_mold
     - bash build.sh -a "${ARCH}" build_binutils
