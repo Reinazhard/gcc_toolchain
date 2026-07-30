@@ -3,6 +3,9 @@
 # Common helpers and logging routines.
 # Sourced by build.sh and target scripts.
 
+# Timestamped trace output for debugging (visible with `set -x` / bash -x)
+PS4='+$(date +%H:%M:%S) ${BASH_SOURCE[0]}:${LINENO}: '
+
 # Declare DRY_RUN so sourcing order does not matter
 DRY_RUN=${DRY_RUN:-false}
 LOG_FILE=""
