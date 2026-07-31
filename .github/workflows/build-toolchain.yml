@@ -42,7 +42,7 @@ jobs:
 
       - name: Notify — Build Started
         if: always()
-        uses: appleboy/telegram-action@v1
+        uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -55,9 +55,6 @@ jobs:
 
       - name: Download & Extract Sources
         run: bash build.sh -a "${{ matrix.arch }}" download_resources
-
-      - name: Build Stage 1.5 (Mold Linker)
-        run: bash build.sh -a "${{ matrix.arch }}" install_mold
 
       - name: Build Stage 1 (Binutils)
         run: bash build.sh -a "${{ matrix.arch }}" build_binutils
@@ -119,7 +116,7 @@ jobs:
 
       - name: Notify — Build Failed
         if: failure()
-        uses: appleboy/telegram-action@v1
+        uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -132,7 +129,7 @@ jobs:
 
       - name: Notify — Build Finished
         if: success()
-        uses: appleboy/telegram-action@v1
+        uses: appleboy/telegram-action@v1.0.0
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
