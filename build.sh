@@ -58,6 +58,9 @@ BUILD_TRIPLE="$(cc -dumpmachine)"
 JOBS=$(nproc --all)
 export MAKEFLAGS="-j${JOBS}"
 
+# Ensure pkg-config finds system libraries (needed for --with-zstd etc.)
+export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:${PKG_CONFIG_PATH:-}"
+
 # 7. Source all stages/*.sh files
 # Sourcing all stages including helper files to allow direct invocation
 for stage_file in "${SCRIPT_DIR}"/stages/*.sh; do
