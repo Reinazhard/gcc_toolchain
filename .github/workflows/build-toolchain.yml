@@ -11,6 +11,7 @@ jobs:
   build-toolchain:
     name: Build ${{ matrix.arch }} (${{ matrix.target_triple }})
     runs-on: ubuntu-latest
+    environment: Deploy
     container:
       image: ubuntu:24.04
     timeout-minutes: 600 # 10 hours timeout
