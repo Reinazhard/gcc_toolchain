@@ -15,7 +15,6 @@ clean() {
     rm -rf "${WORK_DIR}/sources" \
            "${WORK_DIR}/gcc-src" \
            "${WORK_DIR}/binutils-src" \
-           "${WORK_DIR}/mold-src" \
            "${WORK_DIR}/glibc-${GLIBC_VER}" \
            "${WORK_DIR}/linux-${LINUX_VER}" \
            "${WORK_DIR}/gmp-${GMP_VER}" \

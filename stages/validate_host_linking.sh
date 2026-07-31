@@ -11,7 +11,6 @@ validate_host_linking() {
   for bin in "${PREFIX}/bin/${TARGET}-"*; do
     [[ -f "${bin}" ]] && host_bins+=("${bin}")
   done
-  [[ -f "${PREFIX}/bin/mold" ]] && host_bins+=("${PREFIX}/bin/mold")
 
   if (( ${#host_bins[@]} == 0 )); then
     die "No host binaries found in ${PREFIX}/bin/"

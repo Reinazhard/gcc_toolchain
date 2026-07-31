@@ -6,9 +6,6 @@
 # Sanitize environment
 unset CFLAGS CXXFLAGS LDFLAGS
 
-# Mold linker: not used in HOST_LDFLAGS because mold doesn't support LTO.
-# Only used for non-LTO builds (via explicit -fuse-ld=mold where needed).
-
 BUILD_CFLAGS="-O3 -pipe -march=x86-64-v3 -fomit-frame-pointer"
 BUILD_CXXFLAGS="-O3 -pipe -march=x86-64-v3 -fomit-frame-pointer"
 

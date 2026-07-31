@@ -6,14 +6,10 @@ validate_elf() {
   header "STAGE 9: ELF VALIDATION"
 
   log "Validating host compiler binaries (should be X86-64)..."
-  local host_bins=("gcc" "ld" "as" "mold")
+  local host_bins=("gcc" "ld" "as")
   for tool in "${host_bins[@]}"; do
     local bin_path
-    if [[ "${tool}" == "mold" ]]; then
-      bin_path="${PREFIX}/bin/mold"
-    else
-      bin_path="${PREFIX}/bin/${TARGET}-${tool}"
-    fi
+    bin_path="${PREFIX}/bin/${TARGET}-${tool}"
 
     if [[ -f "${bin_path}" ]]; then
       log "Checking ${bin_path}..."

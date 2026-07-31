@@ -37,12 +37,12 @@ shift $((OPTIND-1))
 
 [[ -z "${ARCH:-}" ]] && usage
 
-# 4. Set core environment early so flags.sh can find mold in ${PREFIX}/bin
+# 4. Set core environment
 export WORK_DIR="$PWD"
 export PREFIX="${WORK_DIR}/gcc-${ARCH}"
 export PATH="${PREFIX}/bin:/usr/bin/core_perl:${PATH}"
 
-# 5. Source lib/flags.sh (needs mold in PATH)
+# 5. Source lib/flags.sh
 source "${SCRIPT_DIR}/lib/flags.sh"
 
 # 6. Source lib/targets.sh
@@ -74,7 +74,6 @@ STAGES=("${@:-all}")
 # ── Stage resume support ───────────────────────────────────────────
 ALL_STAGES=(
   download_resources
-  install_mold
   build_binutils
   build_linux_headers
   build_gcc_pass1
