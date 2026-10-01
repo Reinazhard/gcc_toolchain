@@ -39,16 +39,19 @@ fetch() {
 
   log "Downloading ${file}..."
   if ! $DRY_RUN; then
-    local curl_flags=(-fL --retry 10 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 600)
-    local urls=("${url}")
-    # Add fallback mirrors (order: primary first, then mirrors)
-    if [[ "${url}" == *kernel.org* ]]; then
-      urls+=("https://cdn.kernel.org/pub/${url#*kernel.org/pub/}")
-    elif [[ "${url}" == *ftp.gnu.org* ]]; then
-      urls+=("https://mirrors.kernel.org/gnu/${url#*ftp.gnu.org/gnu/}")
-    fi
+    # -f: fail on HTTP >= 400 so a 403/404 moves us to the next mirror instead
+    #     of silently saving an error page. --retry-all-errors covers 5xx/522
+    #     and transient TLS/DNS failures. --speed-time/--speed-limit abort a
+    #     mirror that connects but never delivers bytes (dead peers), which is
+    #     what makes fallback reach a working mirror quickly.
+    local curl_flags=(-fL --retry 5 --retry-delay 5 --retry-all-errors
+                      --connect-timeout 30 --max-time 900
+                      --speed-time 60 --speed-limit 1024)
+    local -a urls
+    _gen_mirrors "${url}" urls
 
     local success=false
+    local try_url
     for try_url in "${urls[@]}"; do
       if curl "${curl_flags[@]}" -o "sources/${file}.tmp" "${try_url}"; then
         success=true
@@ -61,8 +64,75 @@ fetch() {
     mv "sources/${file}.tmp" "sources/${file}"
     verify_checksum "${file}" "${expected_sha256}"
   else
-    log "[DRY-RUN] curl -fL ... -o sources/${file}.tmp ${url} && mv sources/${file}.tmp sources/${file}"
+    local -a dry_urls
+    _gen_mirrors "${url}" dry_urls
+    log "[DRY-RUN] curl -fL ... -o sources/${file}.tmp <firstworking-of: ${dry_urls[*]}> && mv sources/${file}.tmp sources/${file}"
   fi
+}
+
+# _gen_mirrors <primary-url> <out-array-name>
+#
+# Builds an ordered, de-duplicated list of URL candidates for a source tarball.
+# Only mirrors that were verified by hand to answer HTTP 200/206 for the pinned
+# versions are listed. The list deliberately mixes hosts in different
+# organisations/datacenters (GNU savannah, kernel.org/Fastly, academic and ISP
+# mirrors spread across DE/FR/NL/JP/CN/US) so no single outage, rate-limit or
+# region-wide block can fail the download. Deliberately excludes SourceForge.
+_gen_mirrors() {
+  local url="$1"
+  local -n _out="$2"
+  local path               # path below the mirror's document root
+  local -a _candidates=()
+  local u
+
+  if [[ "${url}" == *ftp.gnu.org/gnu/* || "${url}" == *ftpmirror.gnu.org/* ]]; then
+    path="${url#*ftp.gnu.org/gnu/}"
+    [[ "${url}" == *ftpmirror.gnu.org/* ]] && path="${url#*ftpmirror.gnu.org/}"
+    _candidates=(
+      "https://ftpmirror.gnu.org/${path}"              # official round-robin of GNU mirrors
+      "https://ftp.gnu.org/gnu/${path}"                # authoritative origin
+      "https://mirror.ibcp.fr/pub/gnu/${path}"         # FR
+      "https://ftp.fau.de/gnu/${path}"                 # DE (RRZE)
+      "https://ftp.jaist.ac.jp/pub/GNU/${path}"        # JP
+      "https://mirrors.ustc.edu.cn/gnu/${path}"        # CN
+      "https://mirrors.dotsrc.org/gnu/${path}"         # DK
+      "https://mirrors.ocf.berkeley.edu/gnu/${path}"   # US
+    )
+  elif [[ "${url}" == *gcc.gnu.org/pub/gcc/infrastructure/* ]]; then
+    path="${url#*gcc.gnu.org/pub/gcc/infrastructure/}"
+    _candidates=(
+      "https://gcc.gnu.org/pub/gcc/infrastructure/${path}"          # authoritative
+      "https://sourceware.org/pub/gcc/infrastructure/${path}"       # official binutils/GCC home
+      "https://www.mirrorservice.org/sites/sourceware.org/pub/gcc/infrastructure/${path}" # UK mirror of sourceware
+    )
+  elif [[ "${url}" == *kernel.org/pub/scm/* ]]; then
+    # Git snapshots (git.kernel.org/pub/scm/...) are generated on the fly and are
+    # served ONLY from git.kernel.org. cdn./mirrors.edge./mirrors.kernel.org 301-
+    # or 404- the /pub/scm/ path (cdn redirects to git.kernel.org, mirrors.kernel.org
+    # returns 404), so they must not be listed as mirrors here.
+    _candidates=(
+      "https://git.kernel.org/${url#*kernel.org/}"     # authoritative (identity)
+    )
+  elif [[ "${url}" == *kernel.org/pub/* ]]; then
+    path="${url#*kernel.org/pub/}"
+    _candidates=(
+      "https://cdn.kernel.org/pub/${path}"             # Fastly CDN (kernel.org origin)
+      "https://mirrors.edge.kernel.org/pub/${path}"    # geo-routed kernel.org mirror pool
+      "https://mirrors.kernel.org/pub/${path}"         # kernel.org US
+    )
+  else
+    _candidates=("${url}")
+  fi
+
+  # Primary URL first, then the mirror set; drop duplicates preserving order.
+  _out=()
+  local -A _seen=()
+  for u in "${url}" "${_candidates[@]}"; do
+    [[ -n "${u}" ]] || continue
+    [[ -n "${_seen[${u}]:-}" ]] && continue
+    _seen["${u}"]=1
+    _out+=("${u}")
+  done
 }
 
 download_resources() {
@@ -102,7 +172,8 @@ download_resources() {
   fetch "https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VER}.tar.xz" "${GMP_SHA256:-}" & fetch_pids+=($!)
   fetch "https://ftp.gnu.org/gnu/mpfr/mpfr-${MPFR_VER}.tar.xz" "${MPFR_SHA256:-}" & fetch_pids+=($!)
   fetch "https://ftp.gnu.org/gnu/mpc/mpc-${MPC_VER}.tar.xz" "${MPC_SHA256:-}" & fetch_pids+=($!)
-  fetch "https://downloads.sourceforge.net/project/libisl/isl-${ISL_VER}.tar.xz" "${ISL_SHA256:-}" & fetch_pids+=($!)
+  # ISL ships .bz2 (not .xz) and is hosted on gcc.gnu.org/sourceware, never SourceForge.
+  fetch "https://gcc.gnu.org/pub/gcc/infrastructure/isl-${ISL_VER}.tar.bz2" "${ISL_SHA256:-}" & fetch_pids+=($!)
   
   for pid in "${fetch_pids[@]}"; do
     wait "$pid" || die "A background download failed!"
@@ -137,7 +208,7 @@ download_resources() {
   if ! $DRY_RUN; then
     log "Linking prerequisites in-tree..."
     for dep_dir in "gmp-${GMP_VER}" "mpfr-${MPFR_VER}" "mpc-${MPC_VER}" "isl-${ISL_VER}"; do
-      dep_name="${dep_dir%%-*}"
+      local dep_name="${dep_dir%%-*}"
       ln -sfn "../${dep_dir}" "gcc-src/${dep_name}"
       ln -sfn "../${dep_dir}" "binutils-src/${dep_name}"
     done

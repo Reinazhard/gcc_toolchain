@@ -15,5 +15,10 @@ MPFR_VER=4.2.2
 MPFR_SHA256=b67ba0383ef7e8a8563734e2e889ef5ec3c3b898a01d00fa0a6869ad81c6ce01
 MPC_VER=1.4.1
 MPC_SHA256=91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931
-ISL_VER=0.28
-ISL_SHA256=3dc31b8e1b18329e42d5dfbf84dd55e15c59b61569a2ab246f61497d9592f727
+# ISL 0.24 is GCC's own pinned prerequisite (contrib/download_prerequisites,
+# base_url https://gcc.gnu.org/pub/gcc/infrastructure/). 0.28 is published only
+# on SourceForge, which intermittently returns 522; 0.24 has first-class,
+# non-SourceForge mirrors (gcc.gnu.org + sourceware.org), so the CI download
+# never depends on SourceForge.
+ISL_VER=0.24
+ISL_SHA256=fcf78dd9656c10eb8cf9fbd5f59a0b6b01386205fe1934b3b287a0a1898145c0
